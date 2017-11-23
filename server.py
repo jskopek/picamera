@@ -2,9 +2,8 @@ from picamera import PiCamera
 from time import sleep
 from fractions import Fraction
 import os
-from PIL import ImageStat
-from PIL import Image
 from datetime import datetime
+from utils import get_image_brightness
 
 PHOTO_LOCATION = '/home/pi/Pictures'
 
@@ -91,7 +90,7 @@ class CameraManager(object):
             return True
         print 'decrease_sensor_sensitivity: sensor is at least sensitive (iso: %d, shutter_speed %s)' % (self.camera.iso, self.camera.shutter_speed)
 
-    def calibrate_sensor(self, calibration_image_path, desired_brightness=120):
+    def calibrate_sensor(self, current_brightness, desired_brightness=120):
         """
         Calibrates the sensor based on the image at calibration_image_path
         Does so by examining the brightness of the image and comparing against the desired brightness
@@ -100,22 +99,16 @@ class CameraManager(object):
         Give priority first to ISO sensitivity, then shutter speed
         """
         print 'calibrate_sensor: Beginning sensor calibration'
-        current_brightness = CameraManager.get_image_brightness(calibration_path)
         brightness_diff = current_brightness - desired_brightness
         print 'calibration_sensor: current_brightness=%d desired_brightness=%d brightness_diff=%d' % (current_brightness, desired_brightness, brightness_diff)
-        if brightness_diff > 20:
+        if brightness_diff > 15:
             print 'calibration_sensor: decrease_sensor_sensitivity'
             self.decrease_sensor_sensitivity()
-        elif brightness_diff < -20:
+        elif brightness_diff < -15:
             print 'calibration_sensor: increase_sensor_sensitivity'
             self.increase_sensor_sensitivity()
         print 'calibrate_sensor: Completed sensor calibration'
 
-    @staticmethod
-    def get_image_brightness(image_path):
-        img = Image.open(image_path).convert('L')
-        stat = ImageStat.Stat(img)
-        return stat.mean[0]
 
 if __name__ == '__main__':
     camera_man = CameraManager()
@@ -130,7 +123,8 @@ if __name__ == '__main__':
         i += 1
 
         if(i % 2 == 0):
-            camera_man.calibrate_sensor(filename)
+            current_brightness = get_image_brightness(filename)
+            camera_man.calibrate_sensor(current_brightness)
 
         sleep(10)
 
