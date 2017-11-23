@@ -12,8 +12,8 @@ class CameraManager(object):
         super(CameraManager, self).__init__()
         print 'initializing camera'
         self.camera = PiCamera(
-            framerate=Fraction(1,10) 
-            #resolution='3280x2464'
+            framerate=Fraction(1,10),
+            resolution=(3240,2464)  # if code throws an out of memory error, use raspi-config to set gpu memory to 256mb
         )
         self.camera.rotation = 180
         sleep(2)
@@ -54,13 +54,13 @@ class CameraManager(object):
         elif iso_values.index(self.camera.iso) < (len(iso_values) - 1):
             old_camera_iso = self.camera.iso
             self.camera.iso = iso_values[iso_values.index(self.camera.iso) + 1]
-            print 'increase_sensor_sensitivity: increasing iso %d to %d' % (old_camera_iso, self.camera.shutter_speed)
+            print 'increase_sensor_sensitivity: increasing iso %d to %d' % (old_camera_iso, self.camera.iso)
             return True
 
         # if the shutter speed is under its max, increase the shutter speed by 102%
         if self.camera.shutter_speed < 1000000 * 30:
             old_shutter_speed = self.camera.shutter_speed
-            self.camera.shutter_speed = self.camera.shutter_speed * 1.02
+            self.camera.shutter_speed = int(self.camera.shutter_speed * 1.02)
             print 'increase_sensor_sensitivity: increasing shutter speed from %s to %s' % (old_shutter_speed, self.camera.shutter_speed)
             return True
         print 'increase_sensor_sensitivity: sensor is at most sensitive (iso: %d, shutter_speed %s)' % (self.camera.iso, self.camera.shutter_speed)
@@ -79,13 +79,13 @@ class CameraManager(object):
         elif iso_values.index(self.camera.iso) > 0:
             old_camera_iso = self.camera.iso
             self.camera.iso = iso_values[iso_values.index(self.camera.iso) - 1]
-            print 'increase_sensor_sensitivity: decreasing iso %d to %d' % (old_camera_iso, self.camera.shutter_speed)
+            print 'increase_sensor_sensitivity: decreasing iso %d to %d' % (old_camera_iso, self.camera.iso)
             return True
 
         # if the shutter speed is over 1/1000, decrease the shutter speed by 102%
         if self.camera.shutter_speed > 1000000 * (1/1000.0):
             old_shutter_speed = self.camera.shutter_speed
-            self.camera.shutter_speed = self.camera.shutter_speed / 1.02
+            self.camera.shutter_speed = int(self.camera.shutter_speed / 1.02)
             print 'decrease_sensor_sensitivity: decreasing shutter speed from %s to %s' % (old_shutter_speed, self.camera.shutter_speed)
             return True
         print 'decrease_sensor_sensitivity: sensor is at least sensitive (iso: %d, shutter_speed %s)' % (self.camera.iso, self.camera.shutter_speed)
@@ -105,7 +105,7 @@ class CameraManager(object):
         if brightness_diff > 20:
             print 'calibration_sensor: decrease_sensor_sensitivity'
             self.decrease_sensor_sensitivity()
-        elif brightness_diff > -20:
+        elif brightness_diff < -20:
             print 'calibration_sensor: increase_sensor_sensitivity'
             self.increase_sensor_sensitivity()
         print 'calibrate_sensor: Completed sensor calibration'
@@ -125,7 +125,7 @@ for filename in camera_man.camera.capture_continuous(os.path.join(PHOTO_LOCATION
     i += 1
 
     if(i % 6 == 0):
-        camera_man.calibrate_sensor()
+        camera_man.calibrate_sensor(filename)
 
     sleep(10)
 
