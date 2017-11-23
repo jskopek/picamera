@@ -4,6 +4,7 @@ from fractions import Fraction
 import os
 from PIL import ImageStat
 from PIL import Image
+from datetime import datetime
 
 PHOTO_LOCATION = '/home/pi/Pictures'
 
@@ -116,16 +117,20 @@ class CameraManager(object):
         stat = ImageStat.Stat(img)
         return stat.mean[0]
 
-camera_man = CameraManager()
-camera_man.set_day()
+if __name__ == '__main__':
+    camera_man = CameraManager()
+    if datetime.now().hour > 8 and datetime.now().hour < 18:
+        camera_man.set_day()
+    else:
+        camera_man.set_night()
 
-i = 0
-for filename in camera_man.camera.capture_continuous(os.path.join(PHOTO_LOCATION, 'image{counter:04d}.jpg')):
-    print 'Iteration %d: Captured %s' % (i, filename)
-    i += 1
+    i = 0
+    for filename in camera_man.camera.capture_continuous(os.path.join(PHOTO_LOCATION, 'image{counter:04d}.jpg')):
+        print 'Iteration %d: Captured %s' % (i, filename)
+        i += 1
 
-    if(i % 6 == 0):
-        camera_man.calibrate_sensor(filename)
+        if(i % 2 == 0):
+            camera_man.calibrate_sensor(filename)
 
-    sleep(10)
+        sleep(10)
 
