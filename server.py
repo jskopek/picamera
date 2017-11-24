@@ -15,7 +15,6 @@ class CameraManager(object):
             # framerate=Fraction(1,10),
             resolution=(3240,2464)  # if code throws an out of memory error, use raspi-config to set gpu memory to 256mb
         )
-        self.camera.rotation = 180
         sleep(2)
         print 'camera initialized'
 
