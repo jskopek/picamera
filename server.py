@@ -56,10 +56,14 @@ class CameraManager(object):
             print 'increase_sensor_sensitivity: increasing iso %d to %d' % (old_camera_iso, self.camera.iso)
             return True
 
-        # if the shutter speed is under its max, increase the shutter speed by 102%
-        if self.camera.exposure_speed < 1000000 * 30:
+        # if the shutter speed is under its max, increase the shutter speed by 104%
+        if self.camera.exposure_speed < 1000000 * (1/2000.0):
             old_shutter_speed = self.camera.exposure_speed
-            self.camera.shutter_speed = int(self.camera.exposure_speed * 1.02)
+            self.camera.shutter_speed = 1000000 * (1/2000.0)
+            print 'increase_sensor_sensitivity: shutter speed at lower limit; setting from %s to %s' % (old_shutter_speed, self.camera.shutter_speed)
+        elif self.camera.exposure_speed < 1000000 * 30:
+            old_shutter_speed = self.camera.exposure_speed
+            self.camera.shutter_speed = int(self.camera.exposure_speed * 1.04)
             print 'increase_sensor_sensitivity: increasing shutter speed from %s to %s' % (old_shutter_speed, self.camera.shutter_speed)
             return True
         print 'increase_sensor_sensitivity: sensor is at most sensitive (iso: %d, shutter_speed %s)' % (self.camera.iso, self.camera.exposure_speed)
@@ -81,10 +85,10 @@ class CameraManager(object):
             print 'increase_sensor_sensitivity: decreasing iso %d to %d' % (old_camera_iso, self.camera.iso)
             return True
 
-        # if the shutter speed is over 1/1000, decrease the shutter speed by 102%
+        # if the shutter speed is over 1/1000, decrease the shutter speed by 104%
         if self.camera.exposure_speed > 1000000 * (1/10000.0):
             old_shutter_speed = self.camera.exposure_speed
-            self.camera.shutter_speed = int(self.camera.exposure_speed / 1.02)
+            self.camera.shutter_speed = int(self.camera.exposure_speed / 1.04)
             print 'decrease_sensor_sensitivity: decreasing shutter speed from %s to %s' % (old_shutter_speed, self.camera.shutter_speed)
             return True
         print 'decrease_sensor_sensitivity: sensor is at least sensitive (iso: %d, shutter_speed %s)' % (self.camera.iso, self.camera.exposure_speed)
